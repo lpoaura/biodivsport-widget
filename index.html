@@ -1,0 +1,44 @@
+<!doctype html>
+
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+
+    <title>The HTML5 Herald</title>
+    <meta name="description" content="The HTML5 Herald">
+    <meta name="author" content="SitePoint">
+
+    <link rel="stylesheet" href="assets/leaflet.css">
+    <style>
+        #mapid {
+            height: 100vh;
+        }
+    </style>
+
+
+</head>
+
+<body>
+    <div id="mapid"></div>
+    <script src="assets/leaflet.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script>
+        var mymap = L.map('mapid').setView([45, 5], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxZoom: 18
+        }).addTo(mymap);
+
+        axios({
+            method: 'get',
+            url: 'http://v2327.phpnet.fr/gncitizen/api/programs/8/observations',
+        })
+            .then(function (response) {
+                L.geoJSON(response.data).addTo(mymap);
+            });
+
+    </script>
+</body>
+
+</html>
