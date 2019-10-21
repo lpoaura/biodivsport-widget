@@ -32,7 +32,7 @@
 
         axios({
             method: 'get',
-            url: 'http://v2327.phpnet.fr/gncitizen/api/programs/8/observations',
+            url: 'https://biodiv-sports.fr/api/v2/sensitivearea/?format=geojson&period=any',
         })
             .then(function (response) {
                 L.geoJSON(response.data).addTo(mymap);
