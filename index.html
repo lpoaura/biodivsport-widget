@@ -40,7 +40,7 @@
                                 <label class="label">Langue</label>
                                 <div class="control">
                                     <div class="select">
-                                        <select v-model="form.language">
+                                        <select v-on:change="loadGeoData()" v-model="form.language">
                                             <option selected value> -- Choisissez une langue -- </option>
                                             <option value="fr">FR</option>
                                             <option value="en">EN</option>
@@ -53,9 +53,11 @@
                         <div class="column">
                             <div class="field">
                                 <label class="label">Période</label>
-                                <div class="control">
+                                <input type="checkbox" v-model="form.defaultPeriod" checked> Période courante (option
+                                par défaut)
+                                <div v-if="!form.defaultPeriod" class="control">
                                     <div class="select is-multiple">
-                                        <select multiple v-model="form.period">
+                                        <select multiple v-on:change="loadGeoData()" v-model="form.period">
                                             <option value="1">Janvier</option>
                                             <option value="2">Février</option>
                                             <option value="3">Mars</option>
@@ -68,6 +70,18 @@
                                             <option value="10">Octobre</option>
                                             <option value="11">Novembre</option>
                                             <option value="12">Décembre</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="column">
+                            <div class="field">
+                                <label class="label">Pratiques sportives</label>
+                                <div class="control">
+                                    <div class="select is-multiple">
+                                        <select multiple v-on:change="loadGeoData()" v-model="form.practice">
+                                            <option v-for="p in practicesList" :value="p.id">{{ p.name.fr }}</option>
                                         </select>
                                     </div>
                                 </div>
@@ -92,6 +106,7 @@
     <script src="assets/leaflet.js"></script>
     <script src="assets/vue.js"></script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/lodash/4.13.1/lodash.js"></script>
     <script>
         var mymap = L.map('mapid').setView([46, 6], 8);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -109,38 +124,68 @@
                 omit: null,
                 geoDatas: null,
                 bounds: null,
+
                 form: {
                     language: null,
                     period: [],
+                    practice: [],
+                    defaultPeriod: true,
                 },
+                practicesList: [],
                 qs: [],
                 url: { type: Object },
             },
             methods: {
-                loadGeoData: function (apiUrl) {
+                loadGeoData: _.debounce(function (apiUrl) {
                     this.loading = true;
                     axios
                         .get(
                             this.apiUrl
                         )
                         .then(response => {
+                            try {
+                                geoJsonDatas.remove();
+                            }
+                            catch (error) {
+                                console.error("ERROR", error);
+                            };
+                            // if (geoJsonDatas) {
+                            //     console.log("remove layer");
+                            //     mymap.removeLayer(geoJsonDatas);
+                            // }
                             var geoJsonDatas = L.geoJSON(response.data);
-                            geoJsonDatas.addTo(mymap);
-                            this.bounds = L.geoJSON(this.geoJsonDatas).getBounds();
+                            mymap.addLayer(geoJsonDatas);
+                            this.bounds = geoJsonDatas.getBounds();
                             mymap.fitBounds(this.bounds);
 
                         })
                         .catch(function (error) {
                             console.log(error);
                         });
-                },
+                }, 500),
+            },
+            mounted() {
+                axios.get(
+                    "https://biodiv-sports.fr/api/v2/sportpractice/?format=json"
+                )
+                    .then(response => {
+                        this.practicesList = response.data.results
+                        console.log("practices", this.practicesList)
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
             },
             computed: {
                 apiUrl: function () {
+                    console.log("default", this.defaultPeriod)
                     this.baseApiUrl = "https://biodiv-sports.fr/api/v2/sensitivearea/?format=geojson"
                     this.qs = [];
                     if (!!this.form.language) { this.qs.push("language=" + this.form.language) };
-                    if (this.form.period.length > 0) { this.qs.push("period=" + this.form.period) };
+                    if (!this.form.defaultPeriod) {
+                        if (this.form.period.length > 0) { this.qs.push("period=" + this.form.period) };
+                    }
+                    if (this.form.practice.length > 0) { this.qs.push("practices=" + this.form.practice) };
                     if (this.qs.length > 0) { this.baseApiUrl = this.baseApiUrl + "&" };
                     console.log("qs", this.qs.join("&"));
                     this.finalUrl = this.baseApiUrl + this.qs.join("&");
@@ -149,7 +194,8 @@
 
             },
             created() {
-                this.loadGeoData()
+                this.loadGeoData();
+
             }
         });
 
