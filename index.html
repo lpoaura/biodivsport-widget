@@ -5,11 +5,15 @@
 <head>
     <meta charset="utf-8">
 
-    <title>The HTML5 Herald</title>
-    <meta name="description" content="The HTML5 Herald">
-    <meta name="author" content="SitePoint">
+    <title>Biodiv-Sport Widget</title>
+    <meta name="description" content="biodiv-sport Widget">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="LPO AuRA">
 
     <link rel="stylesheet" href="assets/leaflet.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.8.0/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fork-awesome@1.1.7/css/fork-awesome.min.css"
+        integrity="sha256-gsmEoJAws/Kd3CjuOQzLie5Q3yshhvmo7YNtBG7aaEY=" crossorigin="anonymous">
     <style>
         #mapid {
             height: 100vh;
@@ -20,25 +24,138 @@
 </head>
 
 <body>
-    <div id="mapid"></div>
+    <section class="section">
+        <div class="container">
+            <h1 class="title">
+                Widget Biodiv-Sport
+            </h1>
+            <p class="subtitle">
+                Page de génération des liens pour l'intégration des cartes d'enjeux Biodiv-Sport en <code>iframe</code>
+            </p>
+            <div class="box">
+                <form id="forms">
+                    <div class="columns">
+                        <div class="column">
+                            <div class="field">
+                                <label class="label">Langue</label>
+                                <div class="control">
+                                    <div class="select">
+                                        <select v-model="form.language">
+                                            <option selected value> -- Choisissez une langue -- </option>
+                                            <option value="fr">FR</option>
+                                            <option value="en">EN</option>
+                                            <option value="it">IT</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="column">
+                            <div class="field">
+                                <label class="label">Période</label>
+                                <div class="control">
+                                    <div class="select is-multiple">
+                                        <select multiple v-model="form.period">
+                                            <option value="1">Janvier</option>
+                                            <option value="2">Février</option>
+                                            <option value="3">Mars</option>
+                                            <option value="4">Avril</option>
+                                            <option value="5">Mai</option>
+                                            <option value="6">Juin</option>
+                                            <option value="7">Juillet</option>
+                                            <option value="8">Août</option>
+                                            <option value="9">Septembre</option>
+                                            <option value="10">Octobre</option>
+                                            <option value="11">Novembre</option>
+                                            <option value="12">Décembre</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="box">
+                        <ul>
+                            <li>Langue: {{ form.language }}</li>
+                            <li>Période: {{ form.period }}</li>
+                        </ul>
+                        <code>{{ apiUrl }}</code><a :href="apiUrl" target="_blank"><i class="fa fa-external-link-square"
+                                aria-hidden="true"></i></a>
+                    </div>
+                </form>
+            </div>
+
+
+            <div id="mapid"></div>
+        </div>
+    </section>
     <script src="assets/leaflet.js"></script>
+    <script src="assets/vue.js"></script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script>
-        var mymap = L.map('mapid').setView([45, 5], 13);
+        var mymap = L.map('mapid').setView([46, 6], 8);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
             maxZoom: 18
         }).addTo(mymap);
 
-        axios({
-            method: 'get',
-            url: 'https://biodiv-sports.fr/api/v2/sensitivearea/?format=geojson&period=any',
-        })
-            .then(function (response) {
-                L.geoJSON(response.data).addTo(mymap);
-            });
+        var forms = new Vue({
+            el: '#forms',
+            data: {
+                practices: null,
+                structure: null,
+                bbox: null,
+                fields: null,
+                omit: null,
+                geoDatas: null,
+                bounds: null,
+                form: {
+                    language: null,
+                    period: [],
+                },
+                qs: [],
+                url: { type: Object },
+            },
+            methods: {
+                loadGeoData: function (apiUrl) {
+                    this.loading = true;
+                    axios
+                        .get(
+                            this.apiUrl
+                        )
+                        .then(response => {
+                            var geoJsonDatas = L.geoJSON(response.data);
+                            geoJsonDatas.addTo(mymap);
+                            this.bounds = L.geoJSON(this.geoJsonDatas).getBounds();
+                            mymap.fitBounds(this.bounds);
+
+                        })
+                        .catch(function (error) {
+                            console.log(error);
+                        });
+                },
+            },
+            computed: {
+                apiUrl: function () {
+                    this.baseApiUrl = "https://biodiv-sports.fr/api/v2/sensitivearea/?format=geojson"
+                    this.qs = [];
+                    if (!!this.form.language) { this.qs.push("language=" + this.form.language) };
+                    if (this.form.period.length > 0) { this.qs.push("period=" + this.form.period) };
+                    if (this.qs.length > 0) { this.baseApiUrl = this.baseApiUrl + "&" };
+                    console.log("qs", this.qs.join("&"));
+                    this.finalUrl = this.baseApiUrl + this.qs.join("&");
+                    return this.finalUrl;
+                },
+
+            },
+            created() {
+                this.loadGeoData()
+            }
+        });
+
 
     </script>
+
 </body>
 
 </html>
