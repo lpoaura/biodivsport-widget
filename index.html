@@ -59,9 +59,9 @@
                                     <div class="control">
                                         <div class="select">
                                             <select v-model="form.language">
-                                                <option value="fr" selected>FR</option>
-                                                <option value="en">EN</option>
-                                                <option value="it">IT</option>
+                                                <option value="fr" selected>Français</option>
+                                                <option value="en">English</option>
+                                                <option value="it">Italiano</option>
                                             </select>
                                         </div>
                                     </div>
@@ -126,7 +126,7 @@
                     <textarea id="holdtextIframe" style="display:none;"></textarea>
                 </div>
                 <div class="panel-block">
-                    <button class="button is-info is-fullwidth" v-on:click="copyStringToClipboard(iframeUrl)">Copier</button>
+                    <button class="button is-info is-fullwidth" v-on:click="copyStringToClipboard(htmlIframeUrl)">Copier</button>
                 </div>
             </div>
             <div class="has-display-none js-tab-content" id="tab-geojson">
@@ -158,9 +158,8 @@
     <footer class="footer">
         <div class="content has-text-centered">
             <p>
-                <strong>Bulma</strong> by <a href="https://jgthms.com">Jeremy Thomas</a>. The source code is licensed
-                <a href="http://opensource.org/licenses/mit-license.php">MIT</a>. The website content
-                is licensed <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY NC SA 4.0</a>.
+                <strong>Widget Biodiv-Sports</strong> par la <a href="https://jgthms.com">LPO Auvergne-Rhône-Alpes</a>. 
+                Le code source <a href="https://github.com/lpofredc/biodivsport-widget/" target="_blank"><i class="fa fa-github" aria-hidden="true"></i></a>, est sous licence <a href="http://opensource.org/licenses/mit-license.php">GPL3</a>
             </p>
         </div>
     </footer>
@@ -249,6 +248,10 @@
                 iframeUrl: function () {
                     this.originUrl = window.location.origin;
                     return this.originUrl + '/map.html?apiUrl=' + this.apiUrl
+                },
+                htmlIframeUrl: function () {
+                    this.originUrl = window.location.origin;
+                    return '<iframe src="'+this.originUrl + '/map.html?apiUrl=' + this.apiUrl+"></iframe>"
                 },
 
             }
