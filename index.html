@@ -57,7 +57,7 @@
                                 <div class="field">
                                     <label class="label">Langue</label>
                                     <div class="control">
-                                        <div class="select">
+                                        <div class="select is-fullwidth">
                                             <select v-model="form.language">
                                                 <option value="fr" selected>Français</option>
                                                 <option value="en">English</option>
@@ -74,7 +74,7 @@
                                     (option
                                     par défaut)
                                     <div v-if="!form.defaultPeriod" class="control">
-                                        <div class="select is-multiple">
+                                        <div class="select is-multiple is-fullwidth">
                                             <select multiple v-model="form.period">
                                                 <option value="1">Janvier</option>
                                                 <option value="2">Février</option>
@@ -97,12 +97,31 @@
                                 <div class="field">
                                     <label class="label">Pratiques sportives</label>
                                     <div class="control">
-                                        <div class="select is-multiple">
+                                        <div class="select is-multiple is-fullwidth">
                                             <select multiple v-model="form.practice">
                                                 <option v-for="p in practicesList" :value="p.id">{{ p.name.fr }}
                                                 </option>
                                             </select>
                                         </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="columns">
+                            <div class="column">
+                                <div class="field">
+                                    <label class="label">Hauteur (pixels) : <code>{{iframeHeight}}px</code></label>
+                                    <div class="control">
+                                        <input class="input" v-model="iframeHeight" placeholder="Largeur" type="number"
+                                            step="10">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="column">
+                                <div class="field">
+                                    <label class="label">largeur (%): <code>{{iframeWidth}}%</code></label>
+                                    <div class="control">
+                                        <input v-model="iframeWidth" class="input" placeholder="Hauteur" type="range">
                                     </div>
                                 </div>
                             </div>
@@ -115,27 +134,50 @@
             <p class="panel-heading">
                 <i class="fa fa-code" aria-hidden="true"></i> Code à copier
             </p>
-            <p class="panel-tabs">
-                <a class="is-active" data-tab="tab-iframe">iframe</a>
-                <a data-tab="tab-geojson">geojson</a>
+            <p class="panel-tabs is-boxed is-fullwidth">
+                <a class="is-active" data-tab="tab-iframe"><i class="fa fa-html5" aria-hidden="true"></i> iframe</a>
+                <a data-tab="tab-iframe-wp"><i class="fa fa-wordpress" aria-hidden="true"></i> iframe (WordPress)</a>
+                <a data-tab="tab-geojson"><i class="fa fa-map-o" aria-hidden="true"></i> geojson</a>
             </p>
             <div class="js-tab-content" id="tab-iframe">
                 <div class="panel-block">
-                    </span>
-                    <code id="myIframeCode">&lt;iframe src="{{ iframeUrl }}"&gt;&lt;/iframe&gt;</code>
-                    <textarea id="holdtextIframe" style="display:none;"></textarea>
+                    <div class="control">
+                        <input class="input" type="text" :value="htmlIframeUrl" readonly>
+                    </div>
                 </div>
                 <div class="panel-block">
-                    <button class="button is-info is-fullwidth" v-on:click="copyStringToClipboard(htmlIframeUrl)">Copier</button>
+                    <button class="button is-info is-fullwidth"
+                        v-on:click="copyStringToClipboard(htmlIframeUrl)">Copier</button>
+                </div>
+            </div>
+            <div class="has-display-none js-tab-content" id="tab-iframe-wp">
+                <div class="panel-block">
+                    <div class="control">
+                        <input class="input" type="text" :value="wpIframeUrl" readonly>
+                    </div>
+
+                </div>
+                <div class="panel-block">
+                    <div class="control">
+                        Nécessite l'installation préalable du plugin <strong><a
+                                href="https://wordpress.org/plugins/iframe/" target="blank">IFRAME</a></strong>
+                    </div>
+
+                </div>
+                <div class="panel-block">
+                    <button class="button is-info is-fullwidth"
+                        v-on:click="copyStringToClipboard(wpIframeUrl)">Copier</button>
                 </div>
             </div>
             <div class="has-display-none js-tab-content" id="tab-geojson">
                 <div class="panel-block">
-                    </span>
-                    <code id="myGeojsonCode">{{ apiUrl }}</code>
+                    <div class="control">
+                        <input class="input" type="text" :value="apiUrl" readonly>
+                    </div>
                 </div>
                 <div class="panel-block">
-                    <button class="button is-info is-fullwidth" v-on:click="copyStringToClipboard(apiUrl)">Copier</button>
+                    <button class="button is-info is-fullwidth"
+                        v-on:click="copyStringToClipboard(apiUrl)">Copier</button>
                 </div>
             </div>
         </div>
@@ -144,8 +186,7 @@
             <p class="panel-heading">
                 <i class="fa fa-map" aria-hidden="true"></i> Prévisualisation
             </p>
-            <div class="panel-block">
-                <iframe :src="iframeUrl" width="100%" height="500"> </iframe>
+            <div class="panel-block" v-html="htmlIframeUrl">
             </div>
         </div>
     </div>
@@ -158,8 +199,10 @@
     <footer class="footer">
         <div class="content has-text-centered">
             <p>
-                <strong>Widget Biodiv-Sports</strong> par la <a href="https://jgthms.com">LPO Auvergne-Rhône-Alpes</a>. 
-                Le code source <a href="https://github.com/lpofredc/biodivsport-widget/" target="_blank"><i class="fa fa-github" aria-hidden="true"></i></a>, est sous licence <a href="http://opensource.org/licenses/mit-license.php">GPL3</a>
+                <strong>Widget Biodiv-Sports</strong> par la <a href="https://jgthms.com">LPO Auvergne-Rhône-Alpes</a>.
+                Le code source <a href="https://github.com/lpofredc/biodivsport-widget/" target="_blank"><i
+                        class="fa fa-github" aria-hidden="true"></i></a>, est sous licence <a
+                    href="http://opensource.org/licenses/mit-license.php">GPL3</a>
             </p>
         </div>
     </footer>
@@ -178,7 +221,8 @@
                 omit: null,
                 geoDatas: null,
                 bounds: null,
-
+                iframeWidth: 100,
+                iframeHeight: 500,
                 form: {
                     language: 'fr',
                     period: [],
@@ -251,7 +295,11 @@
                 },
                 htmlIframeUrl: function () {
                     this.originUrl = window.location.origin;
-                    return '<iframe src="'+this.originUrl + '/map.html?apiUrl=' + this.apiUrl+"></iframe>"
+                    return '<iframe src="' + this.originUrl + '/map.html?apiUrl=' + this.apiUrl + '" width="' + this.iframeWidth + '%" height="' + this.iframeHeight + '" frameBorder="0"></iframe>'
+                },
+                wpIframeUrl: function () {
+                    this.originUrl = window.location.origin;
+                    return '[iframe src="' + this.originUrl + '/map.html?apiUrl=' + this.apiUrl + '" width="' + this.iframeWidth + '%" height="' + this.iframeHeight + '" frameBorder="0"]'
                 },
 
             }
