@@ -18,104 +18,159 @@
         #mapid {
             height: 100vh;
         }
+
+        .has-display-none {
+            display: none;
+            visibility: hidden;
+        }
     </style>
 
 
 </head>
 
 <body>
-    <section class="section">
-        <div class="container">
-            <h1 class="title">
-                Widget Biodiv-Sport
-            </h1>
-            <p class="subtitle">
-                Page de génération des liens pour l'intégration des cartes d'enjeux Biodiv-Sport en <code>iframe</code>
+    <nav class="navbar" role="navigation" aria-label="main navigation">
+        <div class="navbar-brand">
+            <a class="navbar-item" href="https://biodiv-sports.fr">
+                <img src="assets/images/logo.png">
+            </a>
+
+        </div>
+    </nav>
+
+    <div class="container" id="app">
+        <h1 class="title">
+            Widget Biodiv-Sport
+        </h1>
+        <p class="subtitle">
+            Page de génération des liens pour l'intégration des cartes d'enjeux Biodiv-Sport en <code>iframe</code>
+        </p>
+        <div class="panel">
+            <p class="panel-heading">
+                <i class="fa fa-cog" aria-hidden="true"></i> Configurateur
             </p>
-            <div class="box">
-                <form id="forms">
-                    <div class="columns">
-                        <div class="column">
-                            <div class="field">
-                                <label class="label">Langue</label>
-                                <div class="control">
-                                    <div class="select">
-                                        <select v-on:change="loadGeoData()" v-model="form.language">
-                                            <option selected value> -- Choisissez une langue -- </option>
-                                            <option value="fr">FR</option>
-                                            <option value="en">EN</option>
-                                            <option value="it">IT</option>
-                                        </select>
+            <div class="panel-block">
+                <div class="container">
+                    <form id="forms">
+                        <div class="columns">
+                            <div class="column">
+                                <div class="field">
+                                    <label class="label">Langue</label>
+                                    <div class="control">
+                                        <div class="select">
+                                            <select v-model="form.language">
+                                                <option value="fr" selected>FR</option>
+                                                <option value="en">EN</option>
+                                                <option value="it">IT</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="column">
+                                <div class="field">
+                                    <label class="label">Période</label>
+                                    <input type="checkbox" v-model="form.defaultPeriod" checked> Période courante
+                                    (option
+                                    par défaut)
+                                    <div v-if="!form.defaultPeriod" class="control">
+                                        <div class="select is-multiple">
+                                            <select multiple v-model="form.period">
+                                                <option value="1">Janvier</option>
+                                                <option value="2">Février</option>
+                                                <option value="3">Mars</option>
+                                                <option value="4">Avril</option>
+                                                <option value="5">Mai</option>
+                                                <option value="6">Juin</option>
+                                                <option value="7">Juillet</option>
+                                                <option value="8">Août</option>
+                                                <option value="9">Septembre</option>
+                                                <option value="10">Octobre</option>
+                                                <option value="11">Novembre</option>
+                                                <option value="12">Décembre</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="column">
+                                <div class="field">
+                                    <label class="label">Pratiques sportives</label>
+                                    <div class="control">
+                                        <div class="select is-multiple">
+                                            <select multiple v-model="form.practice">
+                                                <option v-for="p in practicesList" :value="p.id">{{ p.name.fr }}
+                                                </option>
+                                            </select>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="column">
-                            <div class="field">
-                                <label class="label">Période</label>
-                                <input type="checkbox" v-model="form.defaultPeriod" checked> Période courante (option
-                                par défaut)
-                                <div v-if="!form.defaultPeriod" class="control">
-                                    <div class="select is-multiple">
-                                        <select multiple v-on:change="loadGeoData()" v-model="form.period">
-                                            <option value="1">Janvier</option>
-                                            <option value="2">Février</option>
-                                            <option value="3">Mars</option>
-                                            <option value="4">Avril</option>
-                                            <option value="5">Mai</option>
-                                            <option value="6">Juin</option>
-                                            <option value="7">Juillet</option>
-                                            <option value="8">Août</option>
-                                            <option value="9">Septembre</option>
-                                            <option value="10">Octobre</option>
-                                            <option value="11">Novembre</option>
-                                            <option value="12">Décembre</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="column">
-                            <div class="field">
-                                <label class="label">Pratiques sportives</label>
-                                <div class="control">
-                                    <div class="select is-multiple">
-                                        <select multiple v-on:change="loadGeoData()" v-model="form.practice">
-                                            <option v-for="p in practicesList" :value="p.id">{{ p.name.fr }}</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="box">
-                        <ul>
-                            <li>Langue: {{ form.language }}</li>
-                            <li>Période: {{ form.period }}</li>
-                        </ul>
-                        <code>{{ apiUrl }}</code><a :href="apiUrl" target="_blank"><i class="fa fa-external-link-square"
-                                aria-hidden="true"></i></a>
-                    </div>
+                </div>
                 </form>
             </div>
-
-
-            <div id="mapid"></div>
         </div>
-    </section>
+        <div class="panel js-tabs-container">
+            <p class="panel-heading">
+                <i class="fa fa-code" aria-hidden="true"></i> Code à copier
+            </p>
+            <p class="panel-tabs">
+                <a class="is-active" data-tab="tab-iframe">iframe</a>
+                <a data-tab="tab-geojson">geojson</a>
+            </p>
+            <div class="js-tab-content" id="tab-iframe">
+                <div class="panel-block">
+                    </span>
+                    <code id="myIframeCode">&lt;iframe src="{{ iframeUrl }}"&gt;&lt;/iframe&gt;</code>
+                    <textarea id="holdtextIframe" style="display:none;"></textarea>
+                </div>
+                <div class="panel-block">
+                    <button class="button is-info is-fullwidth" v-on:click="copyStringToClipboard(iframeUrl)">Copier</button>
+                </div>
+            </div>
+            <div class="has-display-none js-tab-content" id="tab-geojson">
+                <div class="panel-block">
+                    </span>
+                    <code id="myGeojsonCode">{{ apiUrl }}</code>
+                </div>
+                <div class="panel-block">
+                    <button class="button is-info is-fullwidth" v-on:click="copyStringToClipboard(apiUrl)">Copier</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <p class="panel-heading">
+                <i class="fa fa-map" aria-hidden="true"></i> Prévisualisation
+            </p>
+            <div class="panel-block">
+                <iframe :src="iframeUrl" width="100%" height="500"> </iframe>
+            </div>
+        </div>
+    </div>
+    </div>
+    </div>
+
+    <!-- <div id="mapid"></div> -->
+    </div>
+
+    <footer class="footer">
+        <div class="content has-text-centered">
+            <p>
+                <strong>Bulma</strong> by <a href="https://jgthms.com">Jeremy Thomas</a>. The source code is licensed
+                <a href="http://opensource.org/licenses/mit-license.php">MIT</a>. The website content
+                is licensed <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY NC SA 4.0</a>.
+            </p>
+        </div>
+    </footer>
     <script src="assets/leaflet.js"></script>
     <script src="assets/vue.js"></script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script src="https://cdn.jsdelivr.net/lodash/4.13.1/lodash.js"></script>
     <script>
-        var mymap = L.map('mapid').setView([46, 6], 8);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-            maxZoom: 18
-        }).addTo(mymap);
-
-        var forms = new Vue({
-            el: '#forms',
+        var app = new Vue({
+            el: '#app',
             data: {
                 practices: null,
                 structure: null,
@@ -126,7 +181,7 @@
                 bounds: null,
 
                 form: {
-                    language: null,
+                    language: 'fr',
                     period: [],
                     practice: [],
                     defaultPeriod: true,
@@ -136,33 +191,32 @@
                 url: { type: Object },
             },
             methods: {
-                loadGeoData: _.debounce(function (apiUrl) {
-                    this.loading = true;
-                    axios
-                        .get(
-                            this.apiUrl
-                        )
-                        .then(response => {
-                            try {
-                                geoJsonDatas.remove();
-                            }
-                            catch (error) {
-                                console.error("ERROR", error);
-                            };
-                            // if (geoJsonDatas) {
-                            //     console.log("remove layer");
-                            //     mymap.removeLayer(geoJsonDatas);
-                            // }
-                            var geoJsonDatas = L.geoJSON(response.data);
-                            mymap.addLayer(geoJsonDatas);
-                            this.bounds = geoJsonDatas.getBounds();
-                            mymap.fitBounds(this.bounds);
-
-                        })
-                        .catch(function (error) {
-                            console.log(error);
-                        });
-                }, 500),
+                copyStringToClipboard: function (str) {
+                    // Create new element
+                    var el = document.createElement('textarea');
+                    // Set value (string to be copied)
+                    el.value = str;
+                    alert(el.value);
+                    // Set non-editable to avoid focus and move outside of view
+                    el.setAttribute('readonly', '');
+                    el.style = { position: 'absolute', left: '-9999px' };
+                    document.body.appendChild(el);
+                    // Select text inside element
+                    el.select();
+                    // Copy text to clipboard
+                    document.execCommand('copy');
+                    alert(el.value);
+                    // Remove temporary element
+                    document.body.removeChild(el);
+                },
+                copyIframeCode: function () {
+                    var copyText = document.getElementById("myIframeCode");
+                    console.log("copyText", copyText);
+                    copyText.select();
+                    copyText.setSelectionRange(0, 99999)
+                    document.execCommand("copy");
+                    alert("Copied the text: " + copyText.value);
+                }
             },
             mounted() {
                 axios.get(
@@ -188,20 +242,64 @@
                     if (this.form.practice.length > 0) { this.qs.push("practices=" + this.form.practice) };
                     if (this.qs.length > 0) { this.baseApiUrl = this.baseApiUrl + "&" };
                     console.log("qs", this.qs.join("&"));
+
                     this.finalUrl = this.baseApiUrl + this.qs.join("&");
                     return this.finalUrl;
                 },
-
-            },
-            created() {
-                this.loadGeoData();
+                iframeUrl: function () {
+                    this.originUrl = window.location.origin;
+                    return this.originUrl + '/map.html?apiUrl=' + this.apiUrl
+                },
 
             }
         });
 
 
     </script>
+    <script>
+        // app.js
 
+        'use strict';
+
+        document.addEventListener('DOMContentLoaded', function () {
+
+            var tabs = document.getElementsByClassName('panel-tabs');
+            if (tabs) {
+                var _loop = function _loop() {
+                    var tabListItems = tabs[i].querySelectorAll('a');
+                    tabListItems.forEach(function (tabListItem) {
+
+                        // création d'un écouteur d'évènements sur le clic d'une tab
+                        tabListItem.addEventListener('click', function () {
+
+                            // suppression de la classe is-active sur chacune des tabs avant de la rajouter sur la tab qui a été cliquée
+                            tabListItems.forEach(function (tabListItem) {
+                                tabListItem.classList.remove('is-active');
+                            });
+                            tabListItem.classList.add('is-active');
+
+                            // tabName correspond à la valeur de l'attribut data-tab
+                            var tabName = tabListItem.dataset.tab;
+
+                            // on identifie tous les contenus possibles puis on applique la classe has-display-none si l'ID du contenu ne correspond pas à la valeur de l'attribut data-tab
+                            tabListItem.closest('.js-tabs-container').querySelectorAll('.js-tab-content').forEach(function (tabContent) {
+
+                                if (tabContent.id !== tabName) {
+                                    tabContent.classList.add('has-display-none');
+                                } else {
+                                    tabContent.classList.remove('has-display-none');
+                                }
+                            });
+                        }, false);
+                    });
+                };
+
+                for (var i = 0; i < tabs.length; i++) {
+                    _loop();
+                }
+            }
+        });
+    </script>
 </body>
 
 </html>
