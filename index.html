@@ -23,6 +23,12 @@
             display: none;
             visibility: hidden;
         }
+
+        .message {
+            position: absolute;
+            top: 0%;
+            right: 0%;
+        }
     </style>
 
 
@@ -155,7 +161,6 @@
                     <div class="control">
                         <input class="input" type="text" :value="wpIframeUrl" readonly>
                     </div>
-
                 </div>
                 <div class="panel-block">
                     <div class="control">
@@ -189,6 +194,11 @@
             <div class="panel-block" v-html="htmlIframeUrl">
             </div>
         </div>
+        <article v-if="displayCopyMessage" class="message is-success">
+            <div class="message-body">
+                Code copié!
+            </div>
+        </article>
     </div>
     </div>
     </div>
@@ -223,6 +233,7 @@
                 bounds: null,
                 iframeWidth: 100,
                 iframeHeight: 500,
+                displayCopyMessage: false,
                 form: {
                     language: 'fr',
                     period: [],
@@ -234,12 +245,17 @@
                 url: { type: Object },
             },
             methods: {
+                displayMessage: function (ms) {
+                    this.displayCopyMessage = true;
+                    setTimeout(() => {
+                        this.displayCopyMessage = false;
+                    }, ms);
+                },
                 copyStringToClipboard: function (str) {
                     // Create new element
                     var el = document.createElement('textarea');
                     // Set value (string to be copied)
                     el.value = str;
-                    alert(el.value);
                     // Set non-editable to avoid focus and move outside of view
                     el.setAttribute('readonly', '');
                     el.style = { position: 'absolute', left: '-9999px' };
@@ -248,9 +264,9 @@
                     el.select();
                     // Copy text to clipboard
                     document.execCommand('copy');
-                    alert(el.value);
                     // Remove temporary element
                     document.body.removeChild(el);
+                    this.displayMessage(2000);
                 },
                 copyIframeCode: function () {
                     var copyText = document.getElementById("myIframeCode");
