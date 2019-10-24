@@ -14,6 +14,8 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.8.0/css/bulma.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fork-awesome@1.1.7/css/fork-awesome.min.css"
         integrity="sha256-gsmEoJAws/Kd3CjuOQzLie5Q3yshhvmo7YNtBG7aaEY=" crossorigin="anonymous">
+    <link href="https://www.ruan-jian.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" rel="stylesheet">
+
     <style>
         #map {
             height: 100vh;
@@ -26,17 +28,67 @@
     <div id="map"></div>
     <script src="assets/leaflet.js"></script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://www.ruan-jian.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
     <script>
         var map = L.map('map').setView([46, 6], 8);
         L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
             maxZoom: 18
         }).addTo(map);
+        var drawnItems = L.featureGroup().addTo(map);
+        map.addControl(new L.Control.Draw({
+            edit: {
+                featureGroup: drawnItems,
+                poly: {
+                    allowIntersection: false
+                }
+            },
+            draw: {
+                rectangle: {
+                    allowIntersection: false,
+                    showBounds: true
+                },
+                polygon: false,
+                marker: false,
+                polyline: false,
+                circlemarker: false,
+                circle: false,
+                point: false
+            }
+        }));
+
+        map.on('draw:created', function (e) {
+
+            var type = e.layerType,
+                layer = e.layer;
+
+            if (type === 'rectangle') {
+                layer.on('click', function () {
+                    
+                    var coords = layer.toGeoJSON().geometry.coordinates[0];
+                    console.log(coords);
+                    var bbox = []; 
+                    bbox.push(coords[0][0])
+                    bbox.push(coords[1][1])
+                    bbox.push(coords[2][0])
+                    bbox.push(coords[0][1])
+                    console.log(bbox.join(','))
+                });
+            }
+
+            drawnItems.addLayer(layer);
+        });
+
+        map.on(L.Draw.Event.CREATED, function (event) {
+            var layer = event.layer;
+
+            drawnItems.addLayer(layer);
+        });
 
         function getApiUrl() {
             url = new URL(window.location.href);
-            qs=url.search;
-            apiUrl = qs.replace("?apiUrl=","");
+            qs = url.search;
+            apiUrl = qs.replace("?apiUrl=", "");
             return apiUrl
         };
         console.log(getApiUrl());
@@ -47,10 +99,8 @@
                 )
                 .then(response => {
                     var geoJsonDatas = L.geoJSON(response.data).bindPopup(function (layer) {
-                        return '<strong>elevation</strong> :'+layer.feature.properties.description +'<br>'+ 'description'+layer.feature.properties.description;
-                        console.log(layer.feature.properties)
+                        return '<strong>elevation</strong> :' + layer.feature.properties.description + '<br>' + 'description' + layer.feature.properties.description;
                     });
-                    console.log('Hey Ho');
                     map.addLayer(geoJsonDatas);
                     bounds = geoJsonDatas.getBounds();
                     map.fitBounds(bounds);
