@@ -2,6 +2,7 @@
 
 <html lang="en">
 
+
 <head>
     <meta charset="utf-8">
 
@@ -18,6 +19,11 @@
     <style>
         #map {
             height: 100vh;
+            z-index: 1;
+        }
+
+        .card {
+            z-index: 10000;
         }
     </style>
 
@@ -25,19 +31,38 @@
 
 <body>
     <div id="vmap">
-        <div class="modal">
-            <div class="modal-background"></div>
-            <div class="modal-content">
-                <!-- Any other Bulma elements you want -->
+        <b-modal :active.sync="displayData" v-if="featureProps" has-modal-card trap-focus aria-role="dialog" aria-modal>
+            <div class="modal-card" style="width: auto">
+                <header class="modal-card-head">
+                    <p class="modal-card-title">{{ featureProps.name }}</p>
+                </header>
+                <section class="modal-card-body">
+                    <p><span v-html="featureProps.structure"></span> | <span v-html="featureProps.update_datetime"></span>
+                    <p v-if="featureProps.description" v-html="'<b>Description</b> :&nbsp;'+featureProps.description">
+                    </p>
+                    <p v-if="featureProps.elevation" v-html="'<b>Elévation</b> :&nbsp;<span style=\'color:red;\'>'+featureProps.elevation+'</span>'"></p>
+                    <b-field is-grouped is-centered>
+                    <b-button type="is-info" is-centered tag="a" v-bind:href="featureProps.kml_url" target="_blank">Télécharger le
+                        fichier kml
+                    </b-button>
+                    <b-button type="is-success" is-centered tag="a" v-bind:href="featureProps.info_url" target="_blank">Plus d'informations
+                        </b-button>
+                </b-field>
+                </section>
+                <footer class="modal-card-foot">
+                    <b-button type="is-danger" @click="displayData=false">Close</b-button>
+                </footer>
             </div>
-            <button class="modal-close is-large" aria-label="close"></button>
-        </div>
+        </b-modal>
         <div id="map"></div>
 
     </div>
     <script src="assets/leaflet.js"></script>
     <script src="assets/vue.js"></script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://unpkg.com/buefy/dist/components/modal"></script>
+    <script src="https://unpkg.com/buefy/dist/components/button"></script>
+    <script src="https://unpkg.com/buefy/dist/components/field"></script>
     <script src="https://www.ruan-jian.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
     <script>
         var vmap = new Vue({
@@ -45,6 +70,7 @@
             data: {
                 featureProps: null,
                 map: null,
+                displayData: false,
             },
             methods: {
                 initMap: function () {
@@ -73,7 +99,7 @@
                     apiUrl = qs.replace("?apiUrl=", "");
                     return apiUrl
                 },
-                openDatas() {
+                openDatas: function () {
                     return () => {
                         var self = this;
                         self.displayDataCol = true;
@@ -82,7 +108,7 @@
                         })
                     };
                 },
-                closeDatas() {
+                closeDatas: function () {
                     return () => {
                         var self = this;
                         self.displayDataCol = false;
@@ -91,38 +117,29 @@
                         })
                     };
                 },
-                onEachFeatureFunction() {
-                    if (!this.enableTooltip) {
-                        return () => {
-                        };
-                    }
+                onEachFeatureFunction: function () {
+                    console.log('onEachFeatureFunction fg')
                     return (feature, layer) => {
                         var self = this;
                         layer.on("click", function (e) {
                             self.featureProps = feature.properties;
-                            if (self.displayDataCol === false) {
-                                self.openDatas();
-                            }
-                            ;
-                            self.displayData = true;
-                        }),
-                            layer.on('mouseover', function (e) {
-                                layer.setStyle({
-                                    weight: 5,
-                                    color: '#c82333'
-                                })
-                            }),
-                            layer.on('mouseout', function (e) {
-                                layer.setStyle({
-                                    weight: 0.5,
-                                    color: 'white'
-                                })
-                            });
-                    }
-                },
-                options() {
-                    return {
-                        onEachFeature: this.onEachFeatureFunction
+                            if (self.displayData === false) {
+                                console.log('OpenDatas');
+                                self.displayData = true;
+                            };
+                        });
+                        // layer.on('mouseover', function (e) {
+                        //     layer.setStyle({
+                        //         weight: 5,
+                        //         color: '#c82333'
+                        //     })
+                        // }),
+                        // layer.on('mouseout', function (e) {
+                        //     layer.setStyle({
+                        //         weight: 0.5,
+                        //         color: 'white'
+                        //     })
+                        // });
                     }
                 },
                 loadGeoData: function () {
@@ -132,8 +149,7 @@
                         )
                         .then(response => {
                             var geoJsonDatas = L.geoJSON(response.data, {
-                                onEachFeature: this.onEachFeatureFunction
-
+                                onEachFeature: this.onEachFeatureFunction()
                             });
                             this.map.addLayer(geoJsonDatas);
                             bounds = geoJsonDatas.getBounds();
@@ -153,4 +169,3 @@
 
 
     </script>
-    
