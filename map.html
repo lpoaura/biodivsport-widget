@@ -13,7 +13,7 @@
 
     <link rel="stylesheet" href="assets/leaflet.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.8.0/css/bulma.min.css">
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fork-awesome@1.1.7/css/fork-awesome.min.css" integrity="sha256-gsmEoJAws/Kd3CjuOQzLie5Q3yshhvmo7YNtBG7aaEY=" crossorigin="anonymous">
     <link href="https://www.ruan-jian.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" rel="stylesheet">
     <style>
         #map {
@@ -35,7 +35,7 @@
             <b-modal :active.sync="displayData" v-if="featureProps" has-modal-card trap-focus aria-role="dialog" aria-modal>
                 <div class="modal-card" style="width: auto">
                     <header class="modal-card-head">
-                        <p class="modal-card-title">{{ featureProps.name }}</p>
+                        <p class="modal-card-title"><i class="fa fa-info-circle" aria-hidden="true"></i> {{ featureProps.name }}</p>
                     </header>
                     <section class="modal-card-body">
                         <p><span v-html="'<strong>Structure</strong> :&nbsp;'+featureProps.structure"></p>
@@ -43,8 +43,8 @@
                             <div class="level-left"><strong>Mois sensibles</strong></div>
                             <div class="level-right">
                                 <span class="tags has-addons">
-                                    <span class='tag is-success'>Aucune restriction</span>
-                            <span class='tag is-warning'>Interdiction</span>
+                                    <span class='tag is-success'><i class="fa fa-check-circle" aria-hidden="true"></i> Hors période sensible</span>
+                            <span class='tag is-warning'><i class="fa fa-exclamation-triangle" aria-hidden="true"></i> Période sensible</span>
                             </span>
                 </div>
     </div>
