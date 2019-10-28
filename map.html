@@ -13,15 +13,14 @@
 
     <link rel="stylesheet" href="assets/leaflet.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.8.0/css/bulma.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fork-awesome@1.1.7/css/fork-awesome.min.css"
-        integrity="sha256-gsmEoJAws/Kd3CjuOQzLie5Q3yshhvmo7YNtBG7aaEY=" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css">
     <link href="https://www.ruan-jian.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" rel="stylesheet">
     <style>
         #map {
             height: 100vh;
             z-index: 1;
         }
-
+        
         .card {
             z-index: 10000;
         }
@@ -31,38 +30,68 @@
 
 <body>
     <div id="vmap">
-        <b-modal :active.sync="displayData" v-if="featureProps" has-modal-card trap-focus aria-role="dialog" aria-modal>
-            <div class="modal-card" style="width: auto">
-                <header class="modal-card-head">
-                    <p class="modal-card-title">{{ featureProps.name }}</p>
-                </header>
-                <section class="modal-card-body">
-                    <p><span v-html="featureProps.structure"></span> | <span v-html="featureProps.update_datetime"></span>
-                    <p v-if="featureProps.description" v-html="'<b>Description</b> :&nbsp;'+featureProps.description">
-                    </p>
-                    <p v-if="featureProps.elevation" v-html="'<b>Elévation</b> :&nbsp;<span style=\'color:red;\'>'+featureProps.elevation+'</span>'"></p>
-                    <b-field is-grouped is-centered>
-                    <b-button type="is-info" is-centered tag="a" v-bind:href="featureProps.kml_url" target="_blank">Télécharger le
-                        fichier kml
-                    </b-button>
-                    <b-button type="is-success" is-centered tag="a" v-bind:href="featureProps.info_url" target="_blank">Plus d'informations
-                        </b-button>
-                </b-field>
-                </section>
-                <footer class="modal-card-foot">
-                    <b-button type="is-danger" @click="displayData=false">Close</b-button>
-                </footer>
-            </div>
-        </b-modal>
-        <div id="map"></div>
+        <b-loading :is-full-page="loading.fullPage" :active.sync="loading.isActive" :can-cancel="true">
+            </loading>
+            <b-modal :active.sync="displayData" v-if="featureProps" has-modal-card trap-focus aria-role="dialog" aria-modal>
+                <div class="modal-card" style="width: auto">
+                    <header class="modal-card-head">
+                        <p class="modal-card-title">{{ featureProps.name }}</p>
+                    </header>
+                    <section class="modal-card-body">
+                        <p><span v-html="'<strong>Structure</strong> :&nbsp;'+featureProps.structure"></p>
+                        <div class="level">
+                            <div class="level-left"><strong>Mois sensibles</strong></div>
+                            <div class="level-right">
+                                <span class="tags has-addons">
+                                    <span class='tag is-success'>Vigilance</span>
+                            <span class='tag is-warning'>Aucun enjeu</span>
+                            </span>
+                </div>
+    </div>
+    <table class="table is-fullwidth">
+        <thead>
+            <tr>
+                <th v-for="(p, id) in featureProps.period">{{id+1}}</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <th v-for="p in featureProps.period" v-bind:class="[p ? 'is-warning' : 'is-success']"></th>
+                <span v-if="p" class="icon has-text-warning">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                    </span>
+                </th>
+            </tr>
+        </tbody>
+    </table>
+    <p v-if="featureProps.elevation" v-html="'<strong>Elévation</strong> :&nbsp;<span style=\'color:red;\'>'+featureProps.elevation+'</span>'">
+    </p>
+    <p v-if="featureProps.description" v-html="'<strong>Description</strong> :&nbsp;'+featureProps.description">
+    </p>
+    <p v-if="featureProps.description" v-html="'<strong>Contact</strong> :&nbsp;'+featureProps.contact">
+    </p>
+
+
+    <b-field is-grouped is-centered>
+        <b-button type="is-info" is-centered tag="a" v-bind:href="featureProps.kml_url" target="_blank">Télécharger le fichier kml
+        </b-button>
+        <b-button type="is-success" is-centered tag="a" v-bind:href="featureProps.info_url" target="_blank">Plus d'informations
+        </b-button>
+    </b-field>
+    <span v-html="new Date(featureProps.update_datetime).toLocaleDateString()"></span>
+    </section>
+    <footer class="modal-card-foot">
+        <b-button type="is-danger" @click="displayData=false">Close</b-button>
+    </footer>
+    </div>
+    </b-modal>
+    <div id="map"></div>
 
     </div>
     <script src="assets/leaflet.js"></script>
     <script src="assets/vue.js"></script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-    <script src="https://unpkg.com/buefy/dist/components/modal"></script>
-    <script src="https://unpkg.com/buefy/dist/components/button"></script>
-    <script src="https://unpkg.com/buefy/dist/components/field"></script>
+    <script src="https://unpkg.com/buefy/dist/buefy.min.js"></script>
     <script src="https://www.ruan-jian.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
     <script>
         var vmap = new Vue({
@@ -71,19 +100,25 @@
                 featureProps: null,
                 map: null,
                 displayData: false,
+                loading: {
+                    fullPage: true,
+                    isActive: true
+                },
+                p: ''
             },
             methods: {
-                initMap: function () {
+                initMap: function() {
                     this.map = L.map('map').setView([46, 6], 8);
                 },
-                initLayers: function () {
+                initLayers: function() {
                     var OpenStreetMap = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-                        maxZoom: 19
-                    }).addTo(this.map), OpenTopoMap = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
-                        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-                        maxZoom: 18
-                    });
+                            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                            maxZoom: 19
+                        }).addTo(this.map),
+                        OpenTopoMap = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+                            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                            maxZoom: 18
+                        });
 
                     var baseMaps = {
                         'OpenStreetMap': OpenStreetMap,
@@ -93,56 +128,29 @@
                     this.tileLayers = L.control.layers(baseMaps).addTo(this.map);
 
                 },
-                getApiUrl: function () {
+                getApiUrl: function() {
                     url = new URL(window.location.href);
                     qs = url.search;
                     apiUrl = qs.replace("?apiUrl=", "");
                     return apiUrl
                 },
-                openDatas: function () {
-                    return () => {
-                        var self = this;
-                        self.displayDataCol = true;
-                        this.$nextTick(() => {
-                            this.$refs.deptMap.mapObject.invalidateSize()
-                        })
-                    };
+                periodSensitivity: function(feature) {
+                    var period = feature.period
                 },
-                closeDatas: function () {
-                    return () => {
-                        var self = this;
-                        self.displayDataCol = false;
-                        this.$nextTick(() => {
-                            this.$refs.deptMap.mapObject.invalidateSize()
-                        })
-                    };
-                },
-                onEachFeatureFunction: function () {
+                onEachFeatureFunction: function() {
                     console.log('onEachFeatureFunction fg')
                     return (feature, layer) => {
                         var self = this;
-                        layer.on("click", function (e) {
+                        layer.on("click", function(e) {
                             self.featureProps = feature.properties;
                             if (self.displayData === false) {
                                 console.log('OpenDatas');
                                 self.displayData = true;
                             };
                         });
-                        // layer.on('mouseover', function (e) {
-                        //     layer.setStyle({
-                        //         weight: 5,
-                        //         color: '#c82333'
-                        //     })
-                        // }),
-                        // layer.on('mouseout', function (e) {
-                        //     layer.setStyle({
-                        //         weight: 0.5,
-                        //         color: 'white'
-                        //     })
-                        // });
                     }
                 },
-                loadGeoData: function () {
+                loadGeoData: function() {
                     axios
                         .get(
                             this.getApiUrl()
@@ -155,10 +163,20 @@
                             bounds = geoJsonDatas.getBounds();
                             this.map.fitBounds(bounds);
                         })
-                        .catch(function (error) {
+                        .catch(function(error) {
                             console.log(error);
                         })
                 }
+            },
+            computed: {
+                params: function() {
+                    var apiUrl = this.getApiUrl().search
+                    var querystrings = apiUrl.search;
+                    let params = new URLSearchParams(queryString);
+                },
+                param: function(qs) {
+                    return parseInt(this.params.get(qs));
+                },
             },
             mounted() {
                 this.initMap();
@@ -166,6 +184,4 @@
                 this.loadGeoData();
             }
         });
-
-
     </script>
