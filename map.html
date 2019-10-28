@@ -15,7 +15,6 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fork-awesome@1.1.7/css/fork-awesome.min.css"
         integrity="sha256-gsmEoJAws/Kd3CjuOQzLie5Q3yshhvmo7YNtBG7aaEY=" crossorigin="anonymous">
     <link href="https://www.ruan-jian.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" rel="stylesheet">
-
     <style>
         #map {
             height: 100vh;
@@ -25,90 +24,133 @@
 </head>
 
 <body>
-    <div id="map"></div>
+    <div id="vmap">
+        <div class="modal">
+            <div class="modal-background"></div>
+            <div class="modal-content">
+                <!-- Any other Bulma elements you want -->
+            </div>
+            <button class="modal-close is-large" aria-label="close"></button>
+        </div>
+        <div id="map"></div>
+
+    </div>
     <script src="assets/leaflet.js"></script>
+    <script src="assets/vue.js"></script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script src="https://www.ruan-jian.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
     <script>
-        var map = L.map('map').setView([46, 6], 8);
-        L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-            maxZoom: 18
-        }).addTo(map);
-        var drawnItems = L.featureGroup().addTo(map);
-        map.addControl(new L.Control.Draw({
-            edit: {
-                featureGroup: drawnItems,
-                poly: {
-                    allowIntersection: false
+        var vmap = new Vue({
+            el: '#vmap',
+            data: {
+                featureProps: null,
+                map: null,
+            },
+            methods: {
+                initMap: function () {
+                    this.map = L.map('map').setView([46, 6], 8);
+                },
+                initLayers: function () {
+                    var OpenStreetMap = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                        maxZoom: 19
+                    }).addTo(this.map), OpenTopoMap = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+                        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                        maxZoom: 18
+                    });
+
+                    var baseMaps = {
+                        'OpenStreetMap': OpenStreetMap,
+                        'OpenTopoMap': OpenTopoMap,
+                    }
+
+                    this.tileLayers = L.control.layers(baseMaps).addTo(this.map);
+
+                },
+                getApiUrl: function () {
+                    url = new URL(window.location.href);
+                    qs = url.search;
+                    apiUrl = qs.replace("?apiUrl=", "");
+                    return apiUrl
+                },
+                openDatas() {
+                    return () => {
+                        var self = this;
+                        self.displayDataCol = true;
+                        this.$nextTick(() => {
+                            this.$refs.deptMap.mapObject.invalidateSize()
+                        })
+                    };
+                },
+                closeDatas() {
+                    return () => {
+                        var self = this;
+                        self.displayDataCol = false;
+                        this.$nextTick(() => {
+                            this.$refs.deptMap.mapObject.invalidateSize()
+                        })
+                    };
+                },
+                onEachFeatureFunction() {
+                    if (!this.enableTooltip) {
+                        return () => {
+                        };
+                    }
+                    return (feature, layer) => {
+                        var self = this;
+                        layer.on("click", function (e) {
+                            self.featureProps = feature.properties;
+                            if (self.displayDataCol === false) {
+                                self.openDatas();
+                            }
+                            ;
+                            self.displayData = true;
+                        }),
+                            layer.on('mouseover', function (e) {
+                                layer.setStyle({
+                                    weight: 5,
+                                    color: '#c82333'
+                                })
+                            }),
+                            layer.on('mouseout', function (e) {
+                                layer.setStyle({
+                                    weight: 0.5,
+                                    color: 'white'
+                                })
+                            });
+                    }
+                },
+                options() {
+                    return {
+                        onEachFeature: this.onEachFeatureFunction
+                    }
+                },
+                loadGeoData: function () {
+                    axios
+                        .get(
+                            this.getApiUrl()
+                        )
+                        .then(response => {
+                            var geoJsonDatas = L.geoJSON(response.data, {
+                                onEachFeature: this.onEachFeatureFunction
+
+                            });
+                            this.map.addLayer(geoJsonDatas);
+                            bounds = geoJsonDatas.getBounds();
+                            this.map.fitBounds(bounds);
+                        })
+                        .catch(function (error) {
+                            console.log(error);
+                        })
                 }
             },
-            draw: {
-                rectangle: {
-                    allowIntersection: false,
-                    showBounds: true
-                },
-                polygon: false,
-                marker: false,
-                polyline: false,
-                circlemarker: false,
-                circle: false,
-                point: false
+            mounted() {
+                this.initMap();
+                this.initLayers();
+                this.loadGeoData();
             }
-        }));
-
-        map.on('draw:created', function (e) {
-
-            var type = e.layerType,
-                layer = e.layer;
-
-            if (type === 'rectangle') {
-                layer.on('click', function () {
-                    
-                    var coords = layer.toGeoJSON().geometry.coordinates[0];
-                    console.log(coords);
-                    var bbox = []; 
-                    bbox.push(coords[0][0])
-                    bbox.push(coords[1][1])
-                    bbox.push(coords[2][0])
-                    bbox.push(coords[0][1])
-                    console.log(bbox.join(','))
-                });
-            }
-
-            drawnItems.addLayer(layer);
         });
 
-        map.on(L.Draw.Event.CREATED, function (event) {
-            var layer = event.layer;
 
-            drawnItems.addLayer(layer);
-        });
-
-        function getApiUrl() {
-            url = new URL(window.location.href);
-            qs = url.search;
-            apiUrl = qs.replace("?apiUrl=", "");
-            return apiUrl
-        };
-        console.log(getApiUrl());
-        function loadGeoData() {
-            axios
-                .get(
-                    getApiUrl()
-                )
-                .then(response => {
-                    var geoJsonDatas = L.geoJSON(response.data).bindPopup(function (layer) {
-                        return '<strong>elevation</strong> :' + layer.feature.properties.description + '<br>' + 'description' + layer.feature.properties.description;
-                    });
-                    map.addLayer(geoJsonDatas);
-                    bounds = geoJsonDatas.getBounds();
-                    map.fitBounds(bounds);
-
-                })
-                .catch(function (error) {
-                    console.log(error);
-                });
-        };
-        loadGeoData();
     </script>
+    

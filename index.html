@@ -159,6 +159,7 @@
             <p class="panel-tabs is-boxed is-fullwidth">
                 <a class="is-active" data-tab="tab-iframe"><i class="fa fa-html5" aria-hidden="true"></i> iframe</a>
                 <a data-tab="tab-iframe-wp"><i class="fa fa-wordpress" aria-hidden="true"></i> iframe (WordPress)</a>
+                <a data-tab="tab-url"><i class="fa fa-link" aria-hidden="true"></i> Adresse directe</a>
                 <a data-tab="tab-geojson"><i class="fa fa-map-o" aria-hidden="true"></i> geojson</a>
             </p>
 
@@ -199,6 +200,20 @@
                         v-on:click="copyStringToClipboard(wpIframeUrl)">Copier</button>
                 </div>
             </div>
+            <div class="has-display-none js-tab-content" id="tab-url">
+                    <div class="panel-block">
+                        <div class="control has-icons-left">
+                            <input class="input" type="text" :value="htmlUrl" readonly>
+                            <span class="icon is-small is-left">
+                                <i class="fa fa-code" aria-hidden="true"></i>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="panel-block">
+                        <button class="button is-info is-fullwidth"
+                            v-on:click="copyStringToClipboard(htmlUrl)">Copier</button>
+                    </div>
+                </div>
             <div class="has-display-none js-tab-content" id="tab-geojson">
                 <div class="panel-block">
                     <div class="control has-icons-left">
@@ -373,18 +388,19 @@
 
                 },
                 drawItemsInteract: function () {
-                    var vm = this;
-                    vm.map.on(L.Draw.Event.CREATED, function (e) {
-                        vm.drawItems.addLayer(e.layer);
-                        vm.drawControlFull.remove(vm.map);
-                        vm.drawControlDeleteOnly.addTo(vm.map);
+                    var self = this;
+                    self.map.on(L.Draw.Event.CREATED, function (e) {
+                        self.drawItems.addLayer(e.layer);
+                        self.drawControlFull.remove(self.map);
+                        self.drawControlDeleteOnly.addTo(self.map);
                         var layer = e.layer;
-                        vm.getBbox(layer);
+                        self.getBbox(layer);
                     });
-                    vm.map.on(L.Draw.Event.DELETED, function (e) {
-                        if (vm.drawItems.getLayers().length === 0) {
-                            vm.drawControlDeleteOnly.remove(vm.map);
-                            vm.drawControlFull.addTo(vm.map);
+                    self.map.on(L.Draw.Event.DELETED, function (e) {
+                        if (self.drawItems.getLayers().length === 0) {
+                            self.drawControlDeleteOnly.remove(self.map);
+                            self.drawControlFull.addTo(self.map);
+                            self.form.bbox = null;
                         };
                     });
                 }
@@ -420,17 +436,17 @@
                     this.finalUrl = this.baseApiUrl + this.qs.join("&");
                     return this.finalUrl;
                 },
-                iframeUrl: function () {
+                htmlUrl: function () {
                     this.originUrl = window.location.origin;
                     return this.originUrl + '/map.html?apiUrl=' + this.apiUrl
                 },
                 htmlIframeUrl: function () {
                     this.originUrl = window.location.origin;
-                    return '<iframe src="' + this.originUrl + '/map.html?apiUrl=' + this.apiUrl + '" width="' + this.iframeWidth + '%" height="' + this.iframeHeight + '" frameBorder="0"></iframe>'
+                    return '<iframe src="' + this.htmlUrl + '" width="' + this.iframeWidth + '%" height="' + this.iframeHeight + '" frameBorder="0"></iframe>'
                 },
                 wpIframeUrl: function () {
                     this.originUrl = window.location.origin;
-                    return '[iframe src="' + this.originUrl + '/map.html?apiUrl=' + this.apiUrl + '" width="' + this.iframeWidth + '%" height="' + this.iframeHeight + '" frameBorder="0"]'
+                    return '[iframe src="' + this.htmlUrl + '" width="' + this.iframeWidth + '%" height="' + this.iframeHeight + '" frameBorder="0"]'
                 },
             },
             created() {
