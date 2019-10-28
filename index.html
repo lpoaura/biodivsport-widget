@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.8.0/css/bulma.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fork-awesome@1.1.7/css/fork-awesome.min.css"
         integrity="sha256-gsmEoJAws/Kd3CjuOQzLie5Q3yshhvmo7YNtBG7aaEY=" crossorigin="anonymous">
+    <link href="https://www.ruan-jian.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" rel="stylesheet">
     <style>
         #formmap {
             height: 300px;
@@ -106,7 +107,8 @@
                                     <div class="control">
                                         <div class="select is-multiple is-fullwidth">
                                             <select multiple v-model="form.practice">
-                                                <option v-for="p in practicesList" :value="p.id">{{ p.name.fr }}
+                                                <option v-for="p in practicesList" :value="p.id">
+                                                    {{ p.name.fr }}
                                                 </option>
                                             </select>
                                         </div>
@@ -117,7 +119,8 @@
                         <div class="columns">
                             <div class="column">
                                 <div class="field">
-                                    <label class="label">Hauteur (pixels) : <code>{{iframeHeight}}px</code></label>
+                                    <label class="label">Hauteur (pixels) :
+                                        <code>{{ iframeHeight ? iframeHeight : 'Non défini' }}px</code></label>
                                     <div class="control">
                                         <input class="input" v-model="iframeHeight" placeholder="Largeur" type="number"
                                             step="10">
@@ -126,7 +129,8 @@
                             </div>
                             <div class="column">
                                 <div class="field">
-                                    <label class="label">largeur (%): <code>{{lockBbox}}%</code></label>
+                                    <label class="label">largeur (%):
+                                        <code>{{ iframeWidth ? iframeWidth : 'Non défini' }}%</code></label>
                                     <div class="control">
                                         <input v-model="iframeWidth" class="input" placeholder="Hauteur" type="range">
                                     </div>
@@ -136,8 +140,8 @@
                         <div class="columns">
                             <div class="column">
                                 <div class="field">
-                                    <label class="label">Zone couverte par la carte (bounding box):
-                                        <code>{{lockBbox}}</code></label>
+                                    <label class="label">Zone couverte par la carte à intégrer (bounding box):
+                                        <code>{{ form.bbox ? form.bbox  : 'Non défini' }}</code></label>
                                     <div id="formmap"></div>
                                 </div>
                             </div>
@@ -245,20 +249,19 @@
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script src="https://cdn.jsdelivr.net/lodash/4.13.1/lodash.js"></script>
     <script src="https://www.ruan-jian.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
-    <link href="https://www.ruan-jian.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" rel="stylesheet">
+
 
     <script>
         var app = new Vue({
             el: '#app',
             data: {
                 map: null,
-                tileLayer: null,
+                tileLayers: null,
                 drawItems: null,
-                drawControlEditOnly: null,
+                drawControlDeleteOnly: null,
                 drawControlFull: null,
                 practices: null,
                 structure: null,
-                bbox: null,
                 fields: null,
                 omit: null,
                 geoDatas: null,
@@ -266,12 +269,12 @@
                 iframeWidth: 100,
                 iframeHeight: 500,
                 displayCopyMessage: false,
-                lockBbox: null,
                 form: {
                     language: 'fr',
                     period: [],
                     practice: [],
                     defaultPeriod: true,
+                    bbox: null,
                 },
                 practicesList: [],
                 qs: [],
@@ -303,21 +306,14 @@
                 },
                 copyIframeCode: function () {
                     var copyText = document.getElementById("myIframeCode");
-                    console.log("copyText", copyText);
                     copyText.select();
                     copyText.setSelectionRange(0, 99999)
                     document.execCommand("copy");
                     alert("Copied the text: " + copyText.value);
                 },
-                getBbox(coords) {
-                    var bbox = [];
-                    bbox.push(coords[0][0]);
-                    bbox.push(coords[1][1]);
-                    bbox.push(coords[2][0]);
-                    bbox.push(coords[0][1]);
-
-                    this.lockBbox = bbox.join(',');
-                    return this.lockBox;
+                getBbox(layer) {
+                    this.form.bbox = layer.getBounds().toBBoxString();
+                    return this.form.bbox;
 
                 },
                 initMap: function () {
@@ -325,23 +321,32 @@
                 },
                 initLayers: function () {
 
-                    this.tileLayer = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+                    var OpenStreetMap = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                        maxZoom: 19
+                    }).addTo(this.map), OpenTopoMap = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
                         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
                         maxZoom: 18
-                    }).addTo(this.map);
-                    
+                    });
+
+                    var baseMaps = {
+                        'OpenStreetMap': OpenStreetMap,
+                        'OpenTopoMap': OpenTopoMap,
+                    }
+
+                    this.tileLayers = L.control.layers(baseMaps).addTo(this.map);
+
                 },
                 drawItem: function () {
-                    console.log('DFDFKJDKLFJLDKJFKLJ');
                     this.drawItems = L.featureGroup().addTo(this.map);
-                    console.log('drawItems',this.drawItems);
                     this.drawControlFull = new L.Control.Draw({
-                        edit: {
-                            featureGroup: this.drawItems,
-                            poly: {
-                                allowIntersection: false
-                            }
-                        },
+                        // edit: {
+                        //     featureGroup: this.drawItems,
+                        //     edit: false,
+                        //     poly: {
+                        //         allowIntersection: false
+                        //     }
+                        // },
                         draw: {
                             rectangle: {
                                 allowIntersection: false,
@@ -353,40 +358,35 @@
                             circlemarker: false,
                             circle: false,
                             point: false
-                        }
+                        },
+                        edit: false,
                     });
 
-                    this.drawControlEditOnly = new L.Control.Draw({
+                    this.drawControlDeleteOnly = new L.Control.Draw({
                         edit: {
-                            featureGroup: this.drawItems
+                            featureGroup: this.drawItems,
+                            edit: false,
                         },
-                        draw: false
+                        draw: false,
                     });
                     this.map.addControl(this.drawControlFull);
 
                 },
                 drawItemsInteract: function () {
-
-                    this.map.on(L.Draw.Event.CREATED, function (e) {
-                        // this.drawItems.addLayer(e.layer);
-                        // this.drawControlFull.remove(map);
-                        // this.drawControlEditOnly.addTo(map);
-                        var type = e.layerType,
-                            layer = e.layer;
-                        var coords = layer.toGeoJSON().geometry.coordinates[0];
-                        this.getBbox(coords);
+                    var vm = this;
+                    vm.map.on(L.Draw.Event.CREATED, function (e) {
+                        vm.drawItems.addLayer(e.layer);
+                        vm.drawControlFull.remove(vm.map);
+                        vm.drawControlDeleteOnly.addTo(vm.map);
+                        var layer = e.layer;
+                        vm.getBbox(layer);
                     });
-                    // this.map.on(L.Draw.Event.DELETED, function (e) {
-                    //     if (this.drawItems.getLayers().length === 0) {
-                    //         this.drawControlEditOnly.remove(map);
-                    //         this.drawControlFull.addTo(map);
-                    //     };
-                    // });
-
-                    // this.map.on(L.Draw.Event.CREATED, function (e) {
-                    //     this.drawItems.addLayer(e.layer);
-                    // });
-                    
+                    vm.map.on(L.Draw.Event.DELETED, function (e) {
+                        if (vm.drawItems.getLayers().length === 0) {
+                            vm.drawControlDeleteOnly.remove(vm.map);
+                            vm.drawControlFull.addTo(vm.map);
+                        };
+                    });
                 }
 
             },
@@ -396,7 +396,6 @@
                 )
                     .then(response => {
                         this.practicesList = response.data.results
-                        console.log("practices", this.practicesList)
                     })
                     .catch(function (error) {
                         console.log(error);
@@ -405,16 +404,9 @@
                 this.initLayers();
                 this.drawItem();
                 this.drawItemsInteract();
-
-
-
-
-
-
             },
             computed: {
                 apiUrl: function () {
-                    console.log("default", this.defaultPeriod)
                     this.baseApiUrl = "https://biodiv-sports.fr/api/v2/sensitivearea/?format=geojson"
                     this.qs = [];
                     if (!!this.form.language) { this.qs.push("language=" + this.form.language) };
@@ -422,8 +414,8 @@
                         if (this.form.period.length > 0) { this.qs.push("period=" + this.form.period) };
                     }
                     if (this.form.practice.length > 0) { this.qs.push("practices=" + this.form.practice) };
+                    if (this.form.bbox) { this.qs.push("in_bbox=" + this.form.bbox) };
                     if (this.qs.length > 0) { this.baseApiUrl = this.baseApiUrl + "&" };
-                    console.log("qs", this.qs.join("&"));
 
                     this.finalUrl = this.baseApiUrl + this.qs.join("&");
                     return this.finalUrl;
