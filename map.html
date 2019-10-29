@@ -59,6 +59,10 @@
             transform: translate(-50%, -50%);
             -ms-transform: translate(-50%, -50%);
         }
+
+        .modal-card-foot, .modal-card-head {
+            justify-content: space-between;
+        }
     </style>
 
 </head>
@@ -119,20 +123,21 @@
                     <p><span v-html="'<strong>Structure</strong> :&nbsp;'+featureProps.structure"></p>
                     <p v-if="featureProps.description" v-html="'<strong>Contact</strong> :&nbsp;'+featureProps.contact">
                     </p>
+                    <p><strong>Dernière mise à jour</strong> : <span v-html="new Date(featureProps.update_datetime).toLocaleDateString()"></span>
+                </section>
+                <footer class="modal-card-foot">
+                    <p>
 
-
-                    <b-field is-grouped is-centered>
                         <b-button type="is-info" is-centered tag="a" v-bind:href="featureProps.kml_url" target="_blank">
                             Télécharger le fichier kml
                         </b-button>
                         <b-button type="is-success" is-centered tag="a" v-bind:href="featureProps.info_url"
                             target="_blank">Plus d'informations
                         </b-button>
-                    </b-field>
-                    <span v-html="new Date(featureProps.update_datetime).toLocaleDateString()"></span>
-                </section>
-                <footer class="modal-card-foot">
-                    <b-button type="is-danger" @click="displayData=false">Close</b-button>
+                    </p>
+                    <p>
+                        <b-button type="is-danger" @click="displayData=false">Fermer</b-button>
+                    </p>
                 </footer>
             </div>
         </b-modal>
