@@ -60,7 +60,8 @@
             -ms-transform: translate(-50%, -50%);
         }
 
-        .modal-card-foot, .modal-card-head {
+        .modal-card-foot,
+        .modal-card-head {
             justify-content: space-between;
         }
     </style>
@@ -123,7 +124,8 @@
                     <p><span v-html="'<strong>Structure</strong> :&nbsp;'+featureProps.structure"></p>
                     <p v-if="featureProps.description" v-html="'<strong>Contact</strong> :&nbsp;'+featureProps.contact">
                     </p>
-                    <p><strong>Dernière mise à jour</strong> : <span v-html="new Date(featureProps.update_datetime).toLocaleDateString()"></span>
+                    <p><strong>Dernière mise à jour</strong> : <span
+                            v-html="new Date(featureProps.update_datetime).toLocaleDateString()"></span>
                 </section>
                 <footer class="modal-card-foot">
                     <p>
@@ -156,6 +158,7 @@
             data: {
                 featureProps: null,
                 map: null,
+                legend: null,
                 displayData: false,
                 emptyMessage: 'none',
                 loading: {
@@ -205,6 +208,18 @@
                 periodSensitivity: function (feature) {
                     var period = feature.period
                 },
+                styleColor: function (d) {
+                    return d > 0 ? '#3ec46d' : '#2793da';
+                },
+                styleArea: function (feature) {
+                    return {
+                        fillColor: this.styleColor(feature.properties.species_id),
+                        weight: 2,
+                        opacity: 0.8,
+                        color: this.styleColor(feature.properties.species_id),
+                        fillOpacity: 0.3
+                    };
+                },
                 onEachFeatureFunction: function () {
                     return (feature, layer) => {
                         var self = this;
@@ -215,6 +230,29 @@
                             };
                         });
                     }
+                },
+                mapLegend: function (map) {
+                    var self = this;
+                    L.Control.Legend = L.Control.extend({
+                        onAdd: function (map) {
+                            var div = L.DomUtil.create('div', 'info legend'),
+                                grades = ['is-info', 'is-success'],
+                                labels = ["Zone espèce", "Zone réglementaire"];
+                            for (var i = 0; i < grades.length; i++) {
+                                div.innerHTML += '<span class="tag '+ grades[i]+'">'+ labels[i] +'</span><br>'
+                            }
+                            return div;
+                        },
+                        onRemove: function (map) {
+                            // Nothing to do here
+                        }
+                    });
+
+                    L.control.legend = function (opts) {
+                        return new L.Control.Legend(opts);
+                    }
+
+                    L.control.legend ({ position: 'bottomleft' }).addTo(map);
                 },
                 getPractices: function () {
                     axios.get(
@@ -234,7 +272,8 @@
                         )
                         .then(response => {
                             var geoJsonDatas = L.geoJSON(response.data, {
-                                onEachFeature: this.onEachFeatureFunction()
+                                onEachFeature: this.onEachFeatureFunction(),
+                                style: this.styleArea
                             });
                             this.map.addLayer(geoJsonDatas);
                             if (geoJsonDatas.count === 0) {
@@ -285,6 +324,7 @@
                 this.initMap();
                 this.initLayers();
                 this.loadGeoData();
+                this.mapLegend(this.map);
             }
         });
     </script>
