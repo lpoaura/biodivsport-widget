@@ -82,10 +82,11 @@
                             :class="[actualSensitivity ? 'tag is-warning':'tag is-success']"
                             :data-tooltip="[actualSensitivity ? 'Période sensible':'Hors période sensible']">
                             <i :class="[actualSensitivity ? 'fa fa-exclamation-triangle' : 'fa fa-check-circle']"></i>
-                        </span></i>
+                        </span>
                         {{ featureProps.name }}</p>
                     <p class="tags">
-                        <span class="tag is-info" v-for="p in practicesReadableList">{{p}}</span>
+                        <span class="tag is-dark" v-for="p in practicesReadableList">{{p}}</span>
+                        <span :class="[ !featureProps.species_id ? 'tag is-info':'tag is-success']" v-html="!featureProps.species_id ? 'Zone espèce':'Zone réglementaire'"></span>
                     </p>
                 </header>
                 <section class="modal-card-body">
@@ -116,7 +117,7 @@
                         </tbody>
                     </table>
                     <p v-if="featureProps.elevation"
-                        v-html="'<strong>Altitude</strong> :&nbsp;<span style=\'color:red;\'>'+featureProps.elevation+'</span>'">
+                        v-html="'<strong>Distance de survol minimum (m)</strong> :&nbsp;<span style=\'color:red;\'>'+featureProps.elevation+'</span>'">
                     </p>
                     <p v-if="featureProps.description"
                         v-html="'<strong>Description</strong> :&nbsp;'+featureProps.description">
