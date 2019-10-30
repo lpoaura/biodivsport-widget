@@ -98,7 +98,7 @@
                     <p class="tags">
                         <span class="tag is-dark" v-for="p in practicesReadableList">{{p}}</span>
                         <span :class="[ !featureProps.species_id ? 'tag is-info':'tag is-success']"
-                            v-html="!featureProps.species_id ? 'Zone espèce':'Zone réglementaire'"></span>
+                            v-html="!featureProps.species_id ? 'Zone réglementaire':'Zone espèce'"></span>
                     </p>
                 </header>
                 <section class="modal-card-body">
@@ -298,7 +298,7 @@
                         onAdd: function (map) {
                             var div = L.DomUtil.create('div', 'info legend'),
                                 grades = ['is-info', 'is-success'],
-                                labels = ["Zone espèce", "Zone réglementaire"];
+                                labels = ["Zone réglementaire","Zone espèce"];
                             for (var i = 0; i < grades.length; i++) {
                                 div.innerHTML += '<span class="tag ' + grades[i] + '">' + labels[i] + '</span><br>'
                             }
