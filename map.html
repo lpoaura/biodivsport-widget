@@ -64,6 +64,17 @@
         .modal-card-head {
             justify-content: space-between;
         }
+
+        .bottom-left-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 10px;
+            z-index: 5;
+        }
+
+        .logo {
+            height: 100px;
+        }
     </style>
 
 </head>
@@ -86,7 +97,8 @@
                         {{ featureProps.name }}</p>
                     <p class="tags">
                         <span class="tag is-dark" v-for="p in practicesReadableList">{{p}}</span>
-                        <span :class="[ !featureProps.species_id ? 'tag is-info':'tag is-success']" v-html="!featureProps.species_id ? 'Zone espèce':'Zone réglementaire'"></span>
+                        <span :class="[ !featureProps.species_id ? 'tag is-info':'tag is-success']"
+                            v-html="!featureProps.species_id ? 'Zone espèce':'Zone réglementaire'"></span>
                     </p>
                 </header>
                 <section class="modal-card-body">
@@ -144,6 +156,53 @@
                 </footer>
             </div>
         </b-modal>
+        <b-modal :active.sync="displayPartners" has-modal-card trap-focus aria-role="dialog" aria-modal>
+            <div class="modal-card" style="width: auto">
+                <header class="modal-card-head">
+                    <p class="modal-card-title">Partenaires
+                </header>
+                <section class="modal-card-body">
+                    <div class="content has-text-centered">
+                        <p>
+                            <strong>Widget Biodiv-Sports</strong> par la <a href="https://jgthms.com">LPO
+                                Auvergne-Rhône-Alpes</a>.
+                            Le code source <a href="https://github.com/lpofredc/biodivsport-widget/" target="_blank"><i
+                                    class="fa fa-github" aria-hidden="true"></i></a>, est sous licence <a
+                                href="http://opensource.org/licenses/mit-license.php">GPL3</a>
+                        </p>
+                    </div>
+                    <div class="content has-text-centered">
+                        <p>
+                            Un <strong>projet financé</strong> par&nbsp;: <br>
+                            <a href="https://www.petzl.com/fondation/fondation-petzl" target="_blank"
+                                title="Fondation Petzl"><img class="logo" src="images/Petzl.jpg"
+                                    alt="Fondation Petzl"></a>
+                            <a href="https://www.auvergnerhonealpes.fr/" target="_blank"
+                                title="Région Auvergne-Rhône-Alpes">&nbsp;<img class="logo"
+                                    src="images/Logo_RegionARA_Partenaire_typo-gris-pastille-bleu.png"
+                                    alt="Région Auvergne-Rhône-Alpes"></a>
+                        </p>
+                    </div>
+                    <div class="content has-text-centered">
+                        <p>
+                            Les <strong>partenaires du projet</strong>&nbsp;:<br>
+                            <a href="https://www.petzl.com/fondation/fondation-petzl" target="_blank"
+                                title="Fondation Petzl"><img src="images/bandeau_partenaires.png"
+                                    alt="Fondation Petzl"></a>
+                        </p>
+                    </div>
+                </section>
+                <footer class="modal-card-foot">
+                    <p>
+                    </p>
+                    <p>
+                        <b-button type="is-danger" @click="displayPartners=false">Fermer</b-button>
+                    </p>
+                </footer>
+            </div>
+        </b-modal>
+        <b-button class='is-small bottom-left-btn' @click="displayPartners=true"><i class="fa faw fa-handshake-o"
+                aria-hidden="true"></i> A propos de...</b-button>
         <div id="map"></div>
 
     </div>
@@ -161,6 +220,7 @@
                 map: null,
                 legend: null,
                 displayData: false,
+                displayPartners: false,
                 emptyMessage: 'none',
                 loading: {
                     fullPage: true,
@@ -240,7 +300,7 @@
                                 grades = ['is-info', 'is-success'],
                                 labels = ["Zone espèce", "Zone réglementaire"];
                             for (var i = 0; i < grades.length; i++) {
-                                div.innerHTML += '<span class="tag '+ grades[i]+'">'+ labels[i] +'</span><br>'
+                                div.innerHTML += '<span class="tag ' + grades[i] + '">' + labels[i] + '</span><br>'
                             }
                             return div;
                         },
@@ -253,7 +313,7 @@
                         return new L.Control.Legend(opts);
                     }
 
-                    L.control.legend ({ position: 'bottomleft' }).addTo(map);
+                    L.control.legend({ position: 'bottomleft' }).addTo(map);
                 },
                 getPractices: function () {
                     axios.get(
