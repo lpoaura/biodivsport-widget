@@ -11,13 +11,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="author" content="LPO AuRA">
 
-    <link rel="stylesheet" href="assets/leaflet.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.8.0/css/bulma.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fork-awesome@1.1.7/css/fork-awesome.min.css"
-        integrity="sha256-gsmEoJAws/Kd3CjuOQzLie5Q3yshhvmo7YNtBG7aaEY=" crossorigin="anonymous">
-    <link rel="stylesheet"
-        href="https://cdn.jsdelivr.net/npm/bulma-extensions@6.2.7/bulma-tooltip/dist/css/bulma-tooltip.min.css">
-    <link href="https://www.ruan-jian.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" rel="stylesheet">
+    <link rel="stylesheet" href="assets/node_modules/leaflet/dist/leaflet.css">
+    <link rel="stylesheet" href="assets/node_modules/leaflet-draw/dist/leaflet.draw.css">
+    <link rel="stylesheet" href="assets/node_modules/bulma-extensions/dist/css/bulma-extensions.min.css">
+    <link rel="stylesheet" href="assets/node_modules/bulma/css/bulma.min.css">
+    <link rel="stylesheet" href="assets/node_modules/fork-awesome/css/fork-awesome.css">
+    <link rel="stylesheet" href="assets/node_modules/bulma-tooltip/dist/css/bulma-tooltip.min.css">
+    <link rel="stylesheet" href="assets/node_modules/leaflet-draw/dist/leaflet.draw.css">
+
     <style>
         #map {
             height: 100vh;
@@ -206,12 +207,12 @@
         <div id="map"></div>
 
     </div>
-    <script src="assets/leaflet.js"></script>
-    <script src="assets/vue.js"></script>
-    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-    <script src="https://unpkg.com/buefy/dist/buefy.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bulma-extensions@6.2.7/dist/js/bulma-extensions.min.js"></script>
-    <script src="https://www.ruan-jian.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+    <script src="assets/node_modules/leaflet/dist/leaflet.js"></script>
+    <script src="assets/node_modules/vue/dist/vue.min.js"></script>
+    <script src="assets/node_modules/axios/dist/axios.min.js"></script>
+    <script src="assets/node_modules/buefy/dist/buefy.js"></script>
+    <script src="assets/node_modules/bulma-extensions/dist/js/bulma-extensions.js"></script>
+    <script src="assets/node_modules/leaflet-draw/dist/leaflet.draw.js"></script>
     <script>
         var vmap = new Vue({
             el: '#vmap',
@@ -298,7 +299,7 @@
                         onAdd: function (map) {
                             var div = L.DomUtil.create('div', 'info legend'),
                                 grades = ['is-info', 'is-success'],
-                                labels = ["Zone réglementaire","Zone espèce"];
+                                labels = ["Zone réglementaire", "Zone espèce"];
                             for (var i = 0; i < grades.length; i++) {
                                 div.innerHTML += '<span class="tag ' + grades[i] + '">' + labels[i] + '</span><br>'
                             }
