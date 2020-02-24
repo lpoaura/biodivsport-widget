@@ -442,7 +442,7 @@
             },
             computed: {
                 apiUrl: function () {
-                    this.baseApiUrl = "https://biodiv-sports.fr/api/v2/sensitivearea/?format=geojson"
+                    this.baseApiUrl = "https://biodiv-sports.fr/api/v2/sensitivearea/?format=geojson&page_size=10000"
                     this.qs = [];
                     if (!!this.form.language) { this.qs.push("language=" + this.form.language) };
                     if (!this.form.defaultPeriod) {
