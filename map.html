@@ -88,19 +88,29 @@
                 moment</div>
         </div>
         <b-modal :active.sync="displayData" v-if="featureProps" has-modal-card trap-focus aria-role="dialog" aria-modal>
-            <div class="modal-card" style="width: auto">
+            <div class="modal-card">
                 <header class="modal-card-head">
-                    <p class="modal-card-title" data-tooltip="test"><span
-                            :class="[actualSensitivity ? 'tag is-warning':'tag is-success']"
-                            :data-tooltip="[actualSensitivity ? 'Période sensible':'Hors période sensible']">
-                            <i :class="[actualSensitivity ? 'fa fa-exclamation-triangle' : 'fa fa-check-circle']"></i>
-                        </span>
-                        {{ featureProps.name }}</p>
-                    <p class="tags">
-                        <span class="tag is-dark" v-for="p in practicesReadableList">{{p}}</span>
-                        <span :class="[ !featureProps.species_id ? 'tag is-info':'tag is-success']"
-                            v-html="!featureProps.species_id ? 'Zone réglementaire':'Zone espèce'"></span>
-                    </p>
+                    <div class="columns">
+                        <div class="column">
+                            <p class="modal-card-title"><span
+                                    :class="[actualSensitivity ? 'tag is-warning':'tag is-success']"
+                                    :data-tooltip="[actualSensitivity ? 'Période sensible':'Hors période sensible']">
+                                    <i
+                                        :class="[actualSensitivity ? 'fa fa-exclamation-triangle' : 'fa fa-check-circle']"></i>
+                                </span>
+                                {{ featureProps.name }}
+                            </p>
+                        </div>
+                        <div class="column">
+                            <p class="tags">
+                                <span class="tag is-dark" v-for="p in practicesReadableList">{{p[lang]}}</span>
+                                <span :class="[ !featureProps.species_id ? 'tag is-info':'tag is-success']"
+                                    v-html="!featureProps.species_id ? 'Zone réglementaire':'Zone espèce'"></span>
+                            </p>
+                        </div>
+                    </div>
+
+
                 </header>
                 <section class="modal-card-body">
 
@@ -144,19 +154,20 @@
                 <footer class="modal-card-foot">
                     <p>
 
-                        <b-button type="is-info" is-centered tag="a" v-bind:href="featureProps.kml_url" target="_blank">
+                        <b-button type="is-info is-responsive" is-centered tag="a" v-bind:href="featureProps.kml_url"
+                            target="_blank">
                             <i class="fa fa-download"></i> kml
                         </b-button>
-                        <b-button type="is-info" v-if="featureProps.openair_url" is-centered tag="a"
+                        <b-button type="is-info is-responsive" v-if="featureProps.openair_url" is-centered tag="a"
                             v-bind:href="featureProps.openair_url" target="_blank">
                             <i class="fa fa-download"></i> OpenAir
                         </b-button>
-                        <b-button type="is-success" is-centered tag="a" v-bind:href="featureProps.info_url"
-                            target="_blank">Plus d'informations
+                        <b-button type="is-success is-responsive" is-centered tag="a"
+                            v-bind:href="featureProps.info_url" target="_blank">Plus d'informations
                         </b-button>
                     </p>
                     <p>
-                        <b-button type="is-danger" @click="displayData=false">Fermer</b-button>
+                        <b-button type="is-danger is-responsive" @click="displayData=false">Fermer</b-button>
                     </p>
                 </footer>
             </div>
@@ -169,7 +180,8 @@
                 <section class="modal-card-body">
                     <div class="content has-text-centered">
                         <p>
-                            <strong>Widget Biodiv-Sports</strong> par la <a href="https://auvergne-rhone-alpes.lpo.fr/">LPO
+                            <strong>Widget Biodiv-Sports</strong> par la <a
+                                href="https://auvergne-rhone-alpes.lpo.fr/">LPO
                                 Auvergne-Rhône-Alpes</a>.
                             Le code source <a href="https://github.com/lpofredc/biodivsport-widget/" target="_blank"><i
                                     class="fa fa-github" aria-hidden="true"></i></a>, est sous licence <a
@@ -221,6 +233,8 @@
         var vmap = new Vue({
             el: '#vmap',
             data: {
+                lang: 'fr',
+                baseUrl: 'https://biodiv-sports.fr/',
                 featureProps: null,
                 map: null,
                 legend: null,

@@ -17,7 +17,7 @@
     <link rel="stylesheet" href="assets/node_modules/fork-awesome/css/fork-awesome.css">
     <link rel="stylesheet" href="assets/node_modules/bulma-tooltip/dist/css/bulma-tooltip.min.css">
     <link rel="stylesheet" href="assets/node_modules/leaflet-draw/dist/leaflet.draw.css">
-    
+
     <style>
         #formmap {
             height: 500px;
@@ -34,7 +34,7 @@
             right: 20px;
             z-index: 100;
         }
-         
+
         .logo {
             height: 50px;
         }
@@ -257,7 +257,8 @@
     <footer class="footer">
         <div class="content has-text-centered">
             <p>
-                <strong>Widget Biodiv-Sports</strong> par la <a href="https://auvergne-rhone-alpes.lpo.fr/">LPO Auvergne-Rhône-Alpes</a>.
+                <strong>Widget Biodiv-Sports</strong> par la <a href="https://auvergne-rhone-alpes.lpo.fr/">LPO
+                    Auvergne-Rhône-Alpes</a>.
                 Le code source <a href="https://github.com/lpofredc/biodivsport-widget/" target="_blank"><i
                         class="fa fa-github" aria-hidden="true"></i></a>, est sous licence <a
                     href="http://opensource.org/licenses/mit-license.php">GPL3</a>
@@ -266,17 +267,23 @@
         <div class="content has-text-centered">
             <p>
                 Un <strong>projet financé</strong> par&nbsp;: <br>
-                <a href="https://www.petzl.com/fondation/fondation-petzl" target="_blank" title="Fondation Petzl"><img class="logo" src="images/Petzl.jpg" alt="Fondation Petzl"></a>
-                <a href="https://www.auvergnerhonealpes.fr/" target="_blank" title="Région Auvergne-Rhône-Alpes">&nbsp;<img class="logo" src="images/Logo_RegionARA_Partenaire_typo-gris-pastille-bleu.png" alt="Région Auvergne-Rhône-Alpes"></a>
+                <a href="https://www.petzl.com/fondation/fondation-petzl" target="_blank" title="Fondation Petzl"><img
+                        class="logo" src="images/Petzl.jpg" alt="Fondation Petzl"></a>
+                <a href="https://www.auvergnerhonealpes.fr/" target="_blank"
+                    title="Région Auvergne-Rhône-Alpes">&nbsp;<img class="logo"
+                        src="images/Logo_RegionARA_Partenaire_typo-gris-pastille-bleu.png"
+                        alt="Région Auvergne-Rhône-Alpes"></a>
             </p>
         </div>
         <div class="content has-text-centered">
             <p>
                 Les <strong>partenaires du projet</strong>&nbsp;:<br>
-                <a href="https://www.petzl.com/fondation/fondation-petzl" target="_blank" title="Fondation Petzl"><img src="images/bandeau_partenaires.png" alt="Fondation Petzl"></a>
+                <a href="https://www.petzl.com/fondation/fondation-petzl" target="_blank" title="Fondation Petzl"><img
+                        src="images/bandeau_partenaires.png" alt="Fondation Petzl"></a>
             </p>
         </div>
     </footer>
+
     <script src="assets/node_modules/leaflet/dist/leaflet.js"></script>
     <script src="assets/node_modules/vue/dist/vue.min.js"></script>
     <script src="assets/node_modules/axios/dist/axios.min.js"></script>
@@ -289,6 +296,8 @@
         var app = new Vue({
             el: '#app',
             data: {
+                lang: 'fr',
+                baseUrl: 'https://biodiv-sports.fr/',
                 map: null,
                 tileLayers: null,
                 drawItems: null,
