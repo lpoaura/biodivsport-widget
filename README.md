@@ -7,12 +7,12 @@ Ce projet est un outil de consultation des données du projet [Biodiv'Sport](htt
 Il permet de générer un iframe ou une url de consultation des zones pour une pratique, une période et une zone donnée. 
 
 # Licence:
-* licence GPL3
+* [The Unlicense](https://unlicense.org/)
 
 # Un projet développé par
 * [LPO Auvergne-Rhône-Alpes](https://auvergne-rhone-alpes.lpo.fr)
 
-![LPO AURA](images/LPO_AuRA_l250px.png)
+![LPO AURA](https://auvergne-rhone-alpes.lpo.fr/logo_lpo_aura.png)
 
 # Un projet financé par
 * [Fondation Petzl](https://www.petzl.com/fondation/fondation-petzl)
