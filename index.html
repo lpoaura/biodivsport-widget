@@ -84,10 +84,10 @@
                             <div class="column">
                                 <div class="field">
                                     <label class="label">Période</label>
-                                    <input type="checkbox" v-model="form.defaultPeriod" checked> Période courante
+                                    <input type="checkbox" v-model="defaultPeriod" checked> Période courante
                                     (option
                                     par défaut)
-                                    <div v-if="!form.defaultPeriod" class="control">
+                                    <div v-if="!defaultPeriod" class="control">
                                         <div class="select is-multiple is-fullwidth">
                                             <select multiple v-model="form.period">
                                                 <option value="1">Janvier</option>
@@ -147,7 +147,7 @@
                             <div class="column">
                                 <div class="field">
                                     <label class="label">Zone couverte par la carte à intégrer (bounding box):
-                                        <code>{{ form.bbox ? form.bbox  : 'Non défini' }}</code></label>
+                                        <code>{{ form.in_bbox ? form.in_bbox  : 'Non défini' }}</code></label>
                                     <div id="formmap"></div>
                                 </div>
                             </div>
@@ -298,6 +298,8 @@
             data: {
                 lang: 'fr',
                 baseUrl: 'https://biodiv-sports.fr/',
+                baseApiUrl: "https://biodiv-sports.fr/api/v2/sensitivearea/",
+                params: null,
                 map: null,
                 tileLayers: null,
                 drawItems: null,
@@ -312,17 +314,22 @@
                 iframeWidth: 100,
                 iframeHeight: 500,
                 displayCopyMessage: false,
+                defaultPeriod: true,
                 form: {
                     language: 'fr',
-                    period: [],
-                    practice: [],
-                    defaultPeriod: true,
-                    bbox: null,
+                    period: null,
+                    practice: null,
+                    in_bbox: null,
                 },
                 practicesList: [],
-                qs: [],
                 url: { type: Object },
             },
+            watch: {
+                defaultPeriod: function (newVal, _oldVal) {
+                    this.form.period = newVal ? null : this.form.period
+                }
+            },
+
             methods: {
                 displayMessage: function (ms) {
                     this.displayCopyMessage = true;
@@ -355,8 +362,8 @@
                     alert("Copied the text: " + copyText.value);
                 },
                 getBbox(layer) {
-                    this.form.bbox = layer.getBounds().toBBoxString();
-                    return this.form.bbox;
+                    this.form.in_bbox = layer.getBounds().toBBoxString();
+                    return this.form.in_bbox;
 
                 },
                 initMap: function () {
@@ -428,7 +435,7 @@
                         if (self.drawItems.getLayers().length === 0) {
                             self.drawControlDeleteOnly.remove(self.map);
                             self.drawControlFull.addTo(self.map);
-                            self.form.bbox = null;
+                            self.form.in_bbox = null;
                         };
                     });
                 }
@@ -451,18 +458,14 @@
             },
             computed: {
                 apiUrl: function () {
-                    this.baseApiUrl = "https://biodiv-sports.fr/api/v2/sensitivearea/?format=geojson&page_size=10000"
-                    this.qs = [];
-                    if (!!this.form.language) { this.qs.push("language=" + this.form.language) };
-                    if (!this.form.defaultPeriod) {
-                        if (this.form.period.length > 0) { this.qs.push("period=" + this.form.period) };
+                    const baseParams = {
+                        format: 'geojson',
+                        no_page: 1
                     }
-                    if (this.form.practice.length > 0) { this.qs.push("practices=" + this.form.practice) };
-                    if (this.form.bbox) { this.qs.push("in_bbox=" + this.form.bbox) };
-                    if (this.qs.length > 0) { this.baseApiUrl = this.baseApiUrl + "&" };
-
-                    this.finalUrl = this.baseApiUrl + this.qs.join("&");
-                    return this.finalUrl;
+                    const tempDict = { ...baseParams, ...this.form }
+                    Object.keys(tempDict).forEach((key) => (tempDict[key] == null) && delete tempDict[key]);
+                    this.params = tempDict
+                    return this.baseApiUrl + '?' + new URLSearchParams(this.params).toString()
                 },
                 htmlUrl: function () {
                     this.originUrl = window.location.origin;

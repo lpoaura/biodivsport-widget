@@ -13,6 +13,10 @@
 
     <link rel="stylesheet" href="assets/node_modules/leaflet/dist/leaflet.css">
     <link rel="stylesheet" href="assets/node_modules/leaflet-draw/dist/leaflet.draw.css">
+    <link rel="stylesheet" href="assets/node_modules/leaflet.locatecontrol/dist/L.Control.Locate.min.css">
+    </script>
+    <link rel="stylesheet" href="assets/node_modules/leaflet-geosearch/dist/geosearch.css">
+    </script>
     <link rel="stylesheet" href="assets/node_modules/bulma-extensions/dist/css/bulma-extensions.min.css">
     <link rel="stylesheet" href="assets/node_modules/bulma/css/bulma.min.css">
     <link rel="stylesheet" href="assets/node_modules/fork-awesome/css/fork-awesome.css">
@@ -224,6 +228,8 @@
 
     </div>
     <script src="assets/node_modules/leaflet/dist/leaflet.js"></script>
+    <script src="assets/node_modules/leaflet.locatecontrol/dist/L.Control.Locate.min.js"></script>
+    <script src="assets/node_modules/leaflet-geosearch/dist/geosearch.umd.js"></script>
     <script src="assets/node_modules/vue/dist/vue.min.js"></script>
     <script src="assets/node_modules/axios/dist/axios.min.js"></script>
     <script src="assets/node_modules/buefy/dist/buefy.js"></script>
@@ -250,16 +256,17 @@
             },
             methods: {
                 findObjectByKey: function (array, key, value) {
-                    for (var i = 0; i < array.length; i++) {
-                        if (array[i][key] === value) {
-                            return array[i]['name'];
-                        }
-                    }
-                    return null;
+                    const item = array.find(i => i[key] === value)
+                    return item && ('name' in item) ? item['name'] : null
                 },
 
                 initMap: function () {
                     this.map = L.map('map').setView([46, 6], 8);
+                    L.control.locate().addTo(this.map);
+                    const searchControl = new GeoSearch.GeoSearchControl({
+                        provider: new GeoSearch.OpenStreetMapProvider(),
+                    });
+                    this.map.addControl(searchControl);
                 },
                 initLayers: function () {
                     var OpenStreetMap = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -335,8 +342,10 @@
                     L.control.legend({ position: 'bottomleft' }).addTo(map);
                 },
                 getPractices: function () {
+                    const params = { format: 'json', language: 'fr' }
                     axios.get(
-                        "https://biodiv-sports.fr/api/v2/sportpractice/?format=json&language=fr"
+                        "https://biodiv-sports.fr/api/v2/sportpractice/",
+                        { params }
                     )
                         .then(response => {
                             this.practicesList = response.data.results;
