@@ -112,7 +112,7 @@
                                     <label class="label">Pratiques sportives</label>
                                     <div class="control">
                                         <div class="select is-multiple is-fullwidth">
-                                            <select multiple v-model="form.practice">
+                                            <select multiple v-model="form.practices">
                                                 <option v-for="p in practicesList" :value="p.id">
                                                     {{ p.name.fr }}
                                                 </option>
@@ -318,7 +318,7 @@
                 form: {
                     language: 'fr',
                     period: null,
-                    practice: null,
+                    practices: null,
                     in_bbox: null,
                 },
                 practicesList: [],
