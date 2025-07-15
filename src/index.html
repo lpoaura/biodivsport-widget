@@ -84,10 +84,24 @@
                             <div class="column">
                                 <div class="field">
                                     <label class="label">Période</label>
-                                    <input type="checkbox" v-model="defaultPeriod" checked> Période courante
+                                    <!-- <input type="checkbox" v-model="defaultPeriod" checked> Période courante
                                     (option
-                                    par défaut)
-                                    <div v-if="!defaultPeriod" class="control">
+                                    par défaut) -->
+                                    <div class="control">
+                                        <label class="radio">
+                                            <input type="radio" name="period" v-model="periodRadio" value="default"
+                                                checked /> Période courante (option par défaut)
+                                        </label><br>
+                                        <label class="radio">
+                                            <input type="radio" name="period" value="any" v-model="periodRadio" />
+                                            Toutes périodes
+                                        </label><br>
+                                        <label class="radio">
+                                            <input type="radio" name="period" value="custom" v-model="periodRadio"/>
+                                            Période spécifique ({{periodRadio}} - {{form.period}})
+                                        </label>
+                                    </div>
+                                    <div v-if="periodRadio == 'custom'" class="control">
                                         <div class="select is-multiple is-fullwidth">
                                             <select multiple v-model="form.period">
                                                 <option value="1">Janvier</option>
@@ -314,7 +328,7 @@
                 iframeWidth: 100,
                 iframeHeight: 500,
                 displayCopyMessage: false,
-                defaultPeriod: true,
+                periodRadio: 'default',
                 form: {
                     language: 'fr',
                     period: null,
@@ -325,8 +339,8 @@
                 url: { type: Object },
             },
             watch: {
-                defaultPeriod: function (newVal, _oldVal) {
-                    this.form.period = newVal ? null : this.form.period
+                periodRadio: function (newVal, _oldVal) {
+                    this.form.period = newVal == 'default' ? null : newVal == 'any' ?  newVal : this.form.period
                 }
             },
 
